@@ -1,0 +1,9 @@
+#### Simulation run details ####
+Date and time of run: 16:08:31 30/06/2025
+Random number seed: 1729962934
+Num of OMP threads: 2
+
+Fractional error used: 0.2
+Time step (s): 0.00833333
+Time taken to finish sim (s): 0.0354609
+nActinLimit not reached

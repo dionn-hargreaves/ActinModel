@@ -9,7 +9,7 @@ TARGETDB := bin/model_debug
 INCDIR := include
 EIGEN := /Users/user/Documents/Sheffield/ActinModelling/eigen
 GEO := GeometricTools/GTEngine/include
-BOOST := /opt/homebrew/opt/boost
+# BOOST := /opt/homebrew/opt/boost
 OMP := /opt/homebrew
 LIBOMP := /opt/homebrew/opt/libomp
 

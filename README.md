@@ -33,47 +33,22 @@ I will go through the dependencies presuming you are building on a local machine
 
 The makefile is setup to find eigen in a folder called `eigen-3.3.9` which is the latest version at the time of writing. If you have a different version please adjust the line in the makefile to point to your eigen folder, so changing `EIGEN := /home/$(USER)/eigen-3.3.9` to, for example, `EIGEN := /home/$(USER)/eigen-3.3.7`
 
+### Homebrew installation
+
+**[Homebrew](https://brew.sh/)** is a package manager for MacOS and Linux. I use this to install the required packages from here onward. Open a terminal 
+
+`/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
+
+then follow the instructions to complete adding homebrew to the path. 
+
+
 ### Boost libraries
 
-**[Boost](https://www.boost.org/)** is a set of libraries for C++ and is licensed under the Boost Software License. Getting Boost is simple, I will assume you are using Ubuntu or another Debian based distribution. If you are not using Ubuntu/Debian you will have to look at how to get Boost using your package manager. Open a terminal
+**[Boost](https://www.boost.org/)** is a set of libraries for C++ and is licensed under the Boost Software License. Getting Boost is simple using Homebrew. Open a terminal
 
-`sudo apt-get update`
+`brew install boost`
 
-`sudo apt-get install libboost-dev`
-
-`sudo apt-get install libboost-program-options-dev`
-
-### Anaconda Python 3
-
-**[Anaconda](https://www.anaconda.com/products/individual) Python 3** gives you Python plus a whole suite of packages and software.
-
-The way I install it is explained [here](https://docs.anaconda.com/anaconda/install/linux/). So go to the [website](https://www.anaconda.com/products/individual) and download the installer bash script. Make it executable by running `chmod +x yesAnaconda-3-2020.11-Linux-x86_64.sh` (the name of the script may have changed so don't just blindly copy that!). Then run the installer script
-
-`./Anaconda-3-2020.11-Linux-x86_64.sh`
-
-accept the terms and answer 'yes' when it asks 'Do you wish the installer to initialize Anaconda3
-by running conda init?'
- 
-By default this installs it in the user's home directory (`home/$USER`), and the makefile is setup to find it there.
-
-Close your terminal. Reopen your terminal and it should say '(base)' before `username@pcname:~$`.
-
-The makefile is written for the latest version of Anaconda Python at the time of writing this which is Python 3.8. If you have a different version you will need to change the lines
-
-`PYT := /home/$(USER)/anaconda3/include/python3.8/`
-
-`LIB := -L $(CONPYT) -lpython3.8 -lboost_program_options -lutil`
-
-Replacing python3.8 with your version. Sometimes this is python3.xm instead of python3.x. If you are not sure then you can check by looking in the relevant directories:
-
-`cd /home/$USER/anaconda3/include` 
-
-and look for a folder called `python 3.8` or `python3.7m` etc.
-
-`cd /home/$USER/anaconda3/lib`
-
-and look for a group of files called something like `libpython3.7m.a`, `libpython3.7m.so`, `libpython3.7m.so.1`.
-
+`brew install libomp`
 
 ### Geometric tools library
 
@@ -83,17 +58,39 @@ and look for a group of files called something like `libpython3.7m.a`, `libpytho
 
 ### FFmpeg
 
-**[FFmpeg](https://ffmpeg.org/)** is a suite of libraries for handling video and audio. We need it to create videos from our frames. Installation is simple, again assuming you are on Ubuntu/Debian
+**[FFmpeg](https://ffmpeg.org/)** is a suite of libraries for handling video and audio. We need it to create videos from our frames. Installation is simple using homebrew
 
-`sudo apt-get install ffmpeg`
+`brew install ffmpeg`
 
 ### Others
 
 You will also need other stuff that you probably already have, if in doubt run the following
 
-`sudo apt install make`
+`brew install make`
 
-`sudo apt install g++`
+`brew install gcc`
+
+### Python 3 and the virtual environemnt
+
+Install  **[python](https://www.python.org/downloads/)** Directly from the source. You can check it's installed by opening a terminal and typing
+
+`which python3`
+
+Now, navigate to the ActinModel folder and create a virtual environment for python 
+
+`python3 -m venv .venv`
+
+and activate it using
+
+`source .venv/bin/activate`.
+
+You'll know this has worked correctly because it will say `(.venv)` at the beginning of your command line.
+
+Now we want to install the required packages to generate images (and eventually movies) of the simulation outputs. In our activated virtual environment type
+
+`pip install matplotlib'
+`pip install scipy'
+'
 
 ## Installation on a local machine 
 
@@ -115,15 +112,7 @@ Before running your first simulation you need to create output directories where
 
 We need an output directory for output files
 
-`mkdir /home/$USER/ActinModelling/output`
-
-a directory for the frames
-
-`mkdir -p /home/$USER/ActinModelling/plotting/frames`
-
-and a directory for the videos
-
-`mkdir -p /home/$USER/ActinModelling/plotting/videos`
+`mkdir output`
 
 ## Running a simulation
 
@@ -168,17 +157,23 @@ A python script `plotActinframes.py` is provided which can be set to run at the 
 
 `plotActinframes.py -h`
 
-You can also print frames manually using a results file as input. To do this run
+You can also print frames manually using a results file as input. To do this I've written an executable `GenerateMedia.sh` which you can run by typing
 
-`python plotActinframes.py -I results.dat -O pathToFrames/yyyy-mm-dd-runNumber -TPF 1 -FT png -FL "-5E-6, -5E-6, 5E-6, 5E-6"`
+`./GenerateMedia.sh /Path/to/ActinModel yyyy-mm-dd-runX`
+
+which will create a plotting folder in the simulation output folder. This will contain a movie of the simulation and a folder containing the individual frames which make up the movie. The executable GenerateMedia.sh can be amended to adjust the frame limits etc. at the end of the `plotActinframes.py` call (line 16).
+
+To individually create the frames folder from a given `results.dat` file without the movie, run
+
+`python3 plottingScripts/plotActinframes.py -I results.dat -O yyyy-mm-dd-runNumber/plotting/frames -TPF 1 -FT png -FL "-5E-6, -5E-6, 5E-6, 5E-6"`
 
 So the above will create png images from the results.dat file with a time per frame (inverse of framerate) of 1 second and the frame size limits will be plus minus five microns in x and y.
 
 Frames can be stacked into a video using FFmpeg. A script `stackToVid.sh` is provided which does this, and this can be set to run at the end of a simulation. To manually create a video from frames as input
 
-`stackToVid.sh fullPathToFrames/yyyy-mm-dd-runNumber fullPathToVideo 20 0`
+`plottingSCripts/stackToVid.sh fullPathToFrames fullPathToVideo 20 0`
 
-Which creates a video in `fullPathToVideo` from the images in `fullPathToFrames/yyyy-mm-dd-runNumber`, with a framerate of 20. The last argument is to do with whether or not the simulation was a test run, but you can ignore this. **Make sure not to have forward slashes at the end of the input and output path, else it will not work.**
+Which creates a video in `fullPathToVideo` from the images in `fullPathToFrames`, with a framerate of 20. The last argument is to do with whether or not the simulation was a test run, but you can ignore this. **Make sure not to have forward slashes at the end of the input and output path, else it will not work.**
 
 ## Installation and running on ShARC
 
