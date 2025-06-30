@@ -1,0 +1,5 @@
+open terminal in current folder
+
+>> make
+>> bin/model path/to/config.cfg
+>> ./GenerateMedia.sh /Users/user/Documents/Sheffield/ActinModelling/actinmodel 2025-06-25-run2
