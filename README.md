@@ -1,6 +1,7 @@
 # ActinModel
 
-Actin polymerisation model written by Sheffield University physics PhD student James Bradford under the supervision of Rhoda Hawkins.
+Actin polymerisation model written by Sheffield University physics PhD student James Bradford under the supervision of Rhoda Hawkins (2021).
+The model has been further amended by PDRA Dionn Hargreaves (2025+)
 Please read through all of this before doing anything.
 
 ## Getting the code
