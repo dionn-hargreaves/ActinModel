@@ -15,9 +15,9 @@
 
 mkdir $1/tmp
 count=0
-for file in `ls -v $1/*.png | xargs -n 1 basename`; do
-	#echo "$file"
-	cp $1/$file $1/tmp/$count.png
+for file in `ls $1/*.png | sort -V`; do
+	echo "$file"
+	cp $file $1/tmp/$count.png
 	#convert $file tmp/$count.jpg
 	count=$((count + 1))
 done
