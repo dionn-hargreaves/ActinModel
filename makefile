@@ -7,9 +7,9 @@ BUILDDIR_DEBUG := build_debug
 TARGET := bin/model
 TARGETDB := bin/model_debug
 INCDIR := include
-EIGEN := /Users/user/Documents/Sheffield/ActinModelling/eigen
+EIGEN := /Users/md1dhar/Documents/GitHub/eigen-3.4.0
 GEO := GeometricTools/GTEngine/include
-# BOOST := /opt/homebrew/opt/boost
+BOOST := /opt/homebrew/opt/boost
 OMP := /opt/homebrew
 LIBOMP := /opt/homebrew/opt/libomp
 
