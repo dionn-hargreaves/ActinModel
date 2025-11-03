@@ -89,9 +89,10 @@ You'll know this has worked correctly because it will say `(.venv)` at the begin
 
 Now we want to install the required packages to generate images (and eventually movies) of the simulation outputs. In our activated virtual environment type
 
-`pip install matplotlib'
-`pip install scipy'
-'
+`pip install matplotlib` 
+
+`pip install scipy`
+
 
 ## Installation on a local machine 
 

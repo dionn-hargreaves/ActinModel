@@ -1,0 +1,15 @@
+.venv/
+venv/
+.DS_Store
+*.png
+*.slo
+*.lo
+*.o
+*.a
+*.la
+*.lai
+*.so
+*.so.*
+*.dll
+*.dylib
+output/
