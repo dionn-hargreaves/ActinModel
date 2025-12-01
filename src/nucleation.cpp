@@ -53,12 +53,12 @@ void initNuc(std::vector<Actin> &actinvec, const int nActin,
         {
             if (nucRegions[j].getCircBool() || nucRegions[j].getRingBool())
             {
-                actinvec.push_back(Actin(i, nucRegions[j].getRDist(),
+                actinvec.emplace_back(Actin(i, nucRegions[j].getRDist(),
                                    nucRegions[j].getThetaDist(), j, nucRegions, angleDist));
             }
             else
             {
-                actinvec.push_back(Actin(i, nucRegions[j].getWidthDist(),
+                actinvec.emplace_back(Actin(i, nucRegions[j].getWidthDist(),
                                    nucRegions[j].getHeightDist(), j, nucRegions, angleDist));
             }
         }
@@ -66,11 +66,11 @@ void initNuc(std::vector<Actin> &actinvec, const int nActin,
         {
             if (nucRegions[j].getCircBool() || nucRegions[j].getRingBool())
             {
-                actinvec.push_back(Actin(i, nucRegions[j].getRDist(), nucRegions[j].getThetaDist(), j, nucRegions));
+                actinvec.emplace_back(Actin(i, nucRegions[j].getRDist(), nucRegions[j].getThetaDist(), j, nucRegions));
             }
             else
             {
-                actinvec.push_back(Actin(i, nucRegions[j].getWidthDist(), nucRegions[j].getHeightDist(), j, nucRegions));
+                actinvec.emplace_back(Actin(i, nucRegions[j].getWidthDist(), nucRegions[j].getHeightDist(), j, nucRegions));
             }
         }
 
@@ -222,7 +222,7 @@ void nuc(std::vector<Actin> &actinvec, int &nActin, const double k_NucDens,
                     actin_tmp.setPreDetTethDistP(predetPoint);
                 }
 
-                actinvec.push_back(actin_tmp);
+                actinvec.emplace_back(actin_tmp);
 
                 ++nActin;
             }
@@ -343,7 +343,7 @@ void nucGrid(std::vector<Actin> &actinvec, int &nActin,
 
 
                 gActinGrid.nucleation(actin_tmp.getPoints()[2][0],actin_tmp.getPoints()[2][1]);
-                actinvec.push_back(actin_tmp);
+                actinvec.emplace_back(actin_tmp);
                 ++nActin;
             }
         }
