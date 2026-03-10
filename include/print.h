@@ -32,6 +32,7 @@ void printActinframes(std::ofstream &outf, int nActin,
                       const std::vector<ProteinRegion> &sevRegions,
                       const std::vector<MembraneWall> &memWalls,
                       const std::vector<Membrane> &membranes,
+                      const std::vector<Membrane> &dfmTargets,
                       bool tether, bool crossLinking, const Cortex &cortex);
 
 void printActinHeaders(std::ofstream &outf, double dt_bw_f);

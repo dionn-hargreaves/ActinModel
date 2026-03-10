@@ -33,6 +33,7 @@ void printActinframes(std::ofstream &outf, int nActin,
                       const std::vector<ProteinRegion> &sevRegions,
                       const std::vector<MembraneWall> &memWalls,
                       const std::vector<Membrane> &membranes,
+                      const std::vector<Membrane> &dfmTargets,
                       bool tether, bool crossLinking, const Cortex &cortex)
 {
     //outf.precision(17);
@@ -210,6 +211,31 @@ void printActinframes(std::ofstream &outf, int nActin,
             {
                 outf << "!MF, " << membranes[i].getPoints()[j][0] << ", " << membranes[i].getPoints()[j][1];
                 outf << ", " << membranes[i].getPoints()[j+1][0] << ", " << membranes[i].getPoints()[j+1][1];
+            }
+
+            outf << "\n";
+        }
+    }
+    
+    if (dfmTargets[0].getExist())
+    {
+        outf << "# Deformable target filament points: " << "\n";
+        outf<< "# x pos, ypos" << "\n";
+    }
+
+    for (unsigned int i = 0; i < dfmTargets.size(); ++i)
+    {
+        for (unsigned int j = 0; j < dfmTargets[i].getNumPoints(); ++j)
+        {
+            if (j == dfmTargets[i].getNumPoints()-1)
+            {
+                outf << "!DT, " << dfmTargets[i].getPoints()[j][0] << ", " << dfmTargets[i].getPoints()[j][1];
+                outf << ", " << dfmTargets[i].getPoints()[0][0] << ", " << dfmTargets[i].getPoints()[0][1];
+            }
+            else
+            {
+                outf << "!DT, " << dfmTargets[i].getPoints()[j][0] << ", " << dfmTargets[i].getPoints()[j][1];
+                outf << ", " <<dfmTargets[i].getPoints()[j+1][0] << ", " << dfmTargets[i].getPoints()[j+1][1];
             }
 
             outf << "\n";

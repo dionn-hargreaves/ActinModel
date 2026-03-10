@@ -13,6 +13,6 @@
 echo $1
 echo $2
 echo $3
-python3 plottingScripts/plotActinframes.py -I $1/output/$2/results.dat -O $1/output/$2/plotting/frames -TPF 1 -FT png -FL "-0.75E-5, -0.5E-5, 0.75E-5, 1E-5"
+python3 plottingScripts/plotActinframes.py -I $1/output/$2/results.dat -O $1/output/$2/plotting/frames -TPF 1 -FT png -FL "-0.75E-5, -0.7E-5, 0.75E-5, 1E-5"
 
 plottingScripts/stackToVid.sh $1/output/$2/plotting/frames $1/output/$2/plotting/movie 20 0
