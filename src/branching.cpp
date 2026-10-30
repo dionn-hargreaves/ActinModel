@@ -309,12 +309,12 @@ void branchRegionsRoutine(std::vector<Actin> &actinVec, const double k_branch,
 
             #pragma omp parallel
             {
-                std::vector<int> availAndInReg_priv;
+                std::vector<int> availAndInReg_priv; // available and in region, private vector for each thread
                 #pragma omp for nowait
                 for (unsigned int k = 0; k < availMonoVec.size(); ++k)
                 {
                     std::array<double,2> monoPoint = actinVec[i].findMonoCoord(availMonoVec[k]);
-                    if (branchingRegions[j].checkPointwithin(monoPoint))
+                    if (branchingRegions[j].checkPointwithin(monoPoint)) // if the monomer is within the region
                     {
                         availAndInReg_priv.push_back(availMonoVec[k]);
                     }
@@ -323,7 +323,7 @@ void branchRegionsRoutine(std::vector<Actin> &actinVec, const double k_branch,
                 #pragma omp critical
                 availAndInReg.insert(availAndInReg.end(), availAndInReg_priv.begin(), availAndInReg_priv.end());
             }
-            std::sort(availAndInReg.begin(), availAndInReg.end());
+            std::sort(availAndInReg.begin(), availAndInReg.end()); 
             // sort the vector to maintain determinism if same rng seed!
 
             p_branch *= availAndInReg.size();
@@ -364,7 +364,7 @@ void branchRegionsRoutine(std::vector<Actin> &actinVec, const double k_branch,
                     for (int k = 0; k < actinTMP.getNumSubs(); ++k)
                     {
                         // update the steric grid for the test branch
-                        stericGrid.checkSubandUpdate(actinTMP, k);
+                        stericGrid.checkSubandUpdate(actinTMP, k); 
                     }
                 }
 
@@ -374,7 +374,7 @@ void branchRegionsRoutine(std::vector<Actin> &actinVec, const double k_branch,
                 {
                     // It passed the check
                     assert(actinTMP.getMotherMonoID() >= Actin::s_branchSpacing);
-                    actinTMP.setChangedBoolTrue();
+                    actinTMP.setChangedBoolTrue(); 
 
                     actinVec.push_back(actinTMP);
                     actinVec[i].incrementDaughternum();

@@ -148,7 +148,10 @@ def plotframescpp(directory, time, actins, circles, rects, tris, memWalls,
 
         #ax.scatter([memFilas[i].pos[0]*fac, memFilas[i].pos[2]*fac], [memFilas[i].pos[1]*fac, memFilas[i].pos[3]*fac],
         #            s=20, marker="x", c="r")
-
+    for i in range(len(dfmFilas)):
+        ax.plot([dfmFilas[i].pos[0]*fac, dfmFilas[i].pos[2]*fac], [dfmFilas[i].pos[1]*fac, dfmFilas[i].pos[3]*fac],
+                color = "g", lw=0.5, zorder=5)
+                
     for i in range(len(cortexs)):
         ax.plot([cortexs[i].pos[0]*fac, cortexs[i].pos[2]*fac], [cortexs[i].pos[1]*fac, cortexs[i].pos[3]*fac],
                 color = "#ADD8E6", lw=3, zorder=5)
@@ -182,16 +185,16 @@ def plotframescpp(directory, time, actins, circles, rects, tris, memWalls,
         #ax.plot(actins[i].pos[0]*fac,actins[i].pos[1]*fac,'ko', markersize=1, zorder=2)
 
 
-        if actins[i].pCap == 1:
-            if actins[i].br == 1:
-                # Plot a magenta circle at the start to represent arp2/3
-                ax.plot(actins[i].pos[0]*fac,actins[i].pos[1]*fac,'mo', markersize=2, zorder=3)
-            else:
-                # Plot a green circle at start to represent cap
-                ax.plot(actins[i].pos[0]*fac,actins[i].pos[1]*fac,'go', markersize=2, zorder=3)
-        if actins[i].bCap == 1:
-            # Plot a green circle at the end to represent cap
-            ax.plot(actins[i].pos[2]*fac,actins[i].pos[3]*fac,'go', markersize=2, zorder=3)
+#        if actins[i].pCap == 1:
+#            if actins[i].br == 1:
+#                # Plot a magenta circle at the start to represent arp2/3
+#                ax.plot(actins[i].pos[0]*fac,actins[i].pos[1]*fac,'mo', markersize=2, zorder=3)
+#            else:
+#                # Plot a green circle at start to represent cap
+#                ax.plot(actins[i].pos[0]*fac,actins[i].pos[1]*fac,'go', markersize=2, zorder=3)
+#        if actins[i].bCap == 1:
+#            # Plot a green circle at the end to represent cap
+#            ax.plot(actins[i].pos[2]*fac,actins[i].pos[3]*fac,'go', markersize=2, zorder=3)
 
 
         # For debugging, plot id number of filament
@@ -302,6 +305,7 @@ brs = []
 caps = []
 aCaps = []
 sevs = []
+dfmFilas = []
 
 timeframe = -1
 time = 0
@@ -338,6 +342,7 @@ for line in infile:
         del caps [:]
         del aCaps [:]
         del sevs [:]
+        del dfmFilas [:]
 
     elif line.startswith("# ") or line.startswith("nActin"):
         pass
@@ -365,6 +370,10 @@ for line in infile:
     elif line.startswith("!MF,"):
         values = line.split(", ")
         memFilas.append(TwoPoints(float(values[1]), float(values[2]), float(values[3]), float(values[4])))
+        
+    elif line.startswith("!DT,"):
+        values = line.split(", ")
+        dfmFilas.append(TwoPoints(float(values[1]), float(values[2]), float(values[3]), float(values[4])))
 
     elif line.startswith("!CX,"):
         values = line.split(", ")

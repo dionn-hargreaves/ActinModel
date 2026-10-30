@@ -226,6 +226,11 @@ int main(int argc, char *argv[])
         bool firstTouch = false;
         // Theis empty vector MUST exist, regardless of if it gets filled or not
         std::vector<ExcZone> excZones { };
+        // --------------------- Deformable Target --------------------------------
+        std::vector<std::string> dfmtInput;
+        Membrane dfmTarget = Membrane();
+        std::vector<Membrane> dfmTargets;
+        dfmTargets.reserve(10);
         // ----------------------- Steric Grid -------------------------------------
         std::vector<std::string> stericGridInput;
         StericGrid stericGrid = StericGrid();
@@ -351,7 +356,7 @@ int main(int argc, char *argv[])
                 ("temp", po::value<double>(&temperature)->default_value(300), "Absolute temperature (Kelvin)")
 
                 ("nucRegion", po::value< std::vector<std::string> >(&nucRegionInput), "Nucleation region (angle (factor of pi radians), bottom left x coord, bottom left y coord, width, height (metres), opt: nucleation coefficient, coupled to membrane bool, membrane subunit to couple to)")
-                ("nucRegionR", po::value< std::vector<std::string> >(&nucRegionRInput), "Ringed Nucleation region (angle (factor of pi radians), bottom left x coord, bottom left y coord, width, height (metres), opt: nucleation coefficient, coupled to membrane bool, membrane subunit to couple to)")
+                ("nucRegionR", po::value< std::vector<std::string> >(&nucRegionRInput), "Ringed Nucleation region (x,y position of centre point, outer ring radius, inner ring radius, opt: nucleation coefficient, coupled to membrane bool, membrane subunit to couple to)")
                 ("branchRegion", po::value< std::vector<std::string> >(&branchRegionInput), "Branching region (angle (factor of pi radians), bottom left x coord, bottom left y coord, width, height (metres)) opt: Arp2/3 conc, coupled to membrane bool, membrane subunit to couple to)")
                 ("capRegion", po::value< std::vector<std::string> >(&capRegionInput), "Capping region (angle (factor of pi radians), bottom left x coord, bottom left y coord, width, height (metres), opt: capping coefficient, coupled to membrane bool, membrane subunit to couple to)")
                 ("antiCapRegion", po::value< std::vector<std::string> >(&antiCapRegionInput), "Anti-Capping region (angle (factor of pi radians), bottom left x coord, bottom left y coord, width, height (metres), opt: coupled to membrane bool, membrane subunit to couple to)")
@@ -378,6 +383,8 @@ int main(int argc, char *argv[])
                 ("k_exo", po::value<double> (&k_exo)->default_value(0.1, "0.1"), "Exocytosis rate (per second)")
                 ("exo_mean", po::value<double> (&exo_mean)->default_value(220E-9, "220E-9"), "Exocytosis length mean (metres)")
                 ("exo_stdev", po::value<double> (&exo_stdev)->default_value(45E-9, "45E-9"), "Exocytosis length standard deviation (metres)")
+    
+                ("dfmTarget", po::value< std::vector<std::string> >(&dfmtInput), "Deformable target (whose membrane acts as macrophage membrane) (y-position, x-length (metres), membrane bending mod (units of Kb*T), opt: membrane fusion bool, opt:membrane activation bool, opt: membrane activation distance threshold, opt: init regions replicating cortex), opt: membrane tension")
 
                 ("activeBranch", po::value<bool> (&activeBranch)->default_value(0, "off"), "bool to have activated branch regions under membrane")
                 ("activeBranchHeight", po::value<double> (&activeBranchHeight)->default_value(200E-9, "200E-9"), "Height of activated branch region (m)")
@@ -1141,6 +1148,77 @@ int main(int argc, char *argv[])
         }
         // Push back to vector, even if there is no membrane!
         membranes.push_back(membrane);
+    
+        if (vm.count("dfmTarget"))
+        {
+                for (unsigned int i = 0; i < dfmtInput.size(); ++i)
+                {
+                        // vect will store our arguments
+                        std::vector<double> vect;
+                        // take in a line
+                        std::stringstream ss(dfmtInput[i]);
+                        // j is our value
+                        double j;
+
+                        while (ss >> j)
+                        {
+                                vect.push_back(j);
+                                // ignore white space and commas
+                                if (ss.peek() == ',' || ss.peek() == ' ')
+                                        ss.ignore();
+                        }
+
+                        if (vect.size() == 3)
+                        {
+                                // 3 arguments given: Membrane
+                                // Argument 0 y coordinate of centre of membrane
+                                // Argument 1: Length of membrane
+                                // Argument 2: Bending modulus of membrane (multiples of KT)
+                                dfmTarget = Membrane(vect[0], vect[1], temperature, vect[2]);
+                        }
+                        else if (vect.size() == 4)
+                        {
+                                // 4 Arguments given: Membrane with fusable bool
+                                // Argument 3: Fusable bool 1 - Can fuse, 0 - Can't fuse
+                                dfmTarget = Membrane(vect[0], vect[1], temperature, vect[2], vect[3]);
+                        }
+                        else if (vect.size() == 5)
+                        {
+                                // 5 Arguments given: Membrane with fusable bool and active regions
+                                // Argument 4: Bool allowing for active regions to turn on
+                                // If within 10nm from target
+                                dfmTarget = Membrane(vect[0], vect[1], temperature, vect[2], vect[3], vect[4]);
+                        }
+                        else if (vect.size() == 6)
+                        {
+                            // 6 Arguments given: Membrane with fusable bool and active regions and active region distance
+                            // Argument 5: Active region distance (if want to change from 10nm as above)
+                            dfmTarget = Membrane(vect[0], vect[1], temperature, vect[2], vect[3], vect[4], vect[5]);
+                        }
+                        else if (vect.size() == 7)
+                        {
+                            // 7 Arguments given: Membrane with fusable bool and active regions and active region distance and initialising with a cortex
+                            // Argument 6: Initialise cortex bool
+                            dfmTarget = Membrane(vect[0], vect[1], temperature, vect[2], vect[3], vect[4], vect[5], vect[6]);
+                        }
+                        else if (vect.size() == 8)
+                        {
+                            // 8 Arguments given: Membrane with fusable bool and active regions and active region distance and initialising with a cortex and membrane tension
+                            // Argument 6: Membrane tension
+                            assert(memSprings);
+                            dfmTarget = Membrane(vect[0], vect[1], temperature, vect[2], vect[3], vect[4], vect[5], vect[6], vect[7]);
+
+                        }
+                        else
+                        {
+                                std::cout << "Deformable target must only have 3, 4, 5, 6, 7 or 8 arguments" << std::endl;
+                                return 0;
+                        }
+                }
+
+        }
+        // Push back to vector, even if there is no membrane!
+        dfmTargets.push_back(dfmTarget);
 
         if (vm.count("stericGrid"))
         {
@@ -1522,6 +1600,14 @@ int main(int argc, char *argv[])
                                 stericGrid.updateMembrane(membranes[0], i);
                         }
                 }
+            
+                if (dfmTargets[0].getExist())
+                {
+                        for (int i = 0; i < dfmTargets[0].getNumPoints(); ++i)
+                        {
+                                stericGrid.updateMembrane(dfmTargets[0], i);
+                        }
+                }
 
                 if (cortex.getExist())
                 {
@@ -1678,7 +1764,7 @@ int main(int argc, char *argv[])
                 printActinframes(file_results, nActin, actinVec, 0.0, t_step, excZones,
                                  nucleationRegions, branchingRegions, cappingRegions,
                                  antiCapRegions, sevRegions,
-                                 memWalls, membranes, tether, crossLinking,
+                                 memWalls, membranes, dfmTargets, tether, crossLinking,
                                  cortex);
         }
         if (printMonoTime)
@@ -1730,6 +1816,35 @@ int main(int argc, char *argv[])
                     if (membranes[i].getExist())
                     {
                         membranes[i].fluctuate(temperature, viscosity,
+                                               t_step, actinVec,
+                                               excZones, steric,
+                                               timesFused, stericGrid,
+                                               currentTime,
+                                               branchingRegions,
+                                               branching, arp23Conc,
+                                               cappingRegions,
+                                               antiCapRegions,
+                                               nucleationRegions,
+                                               sevRegions,
+                                               membranes, nActin, tether,
+                                               arpPool,
+                                               arpGrid, memWalls,
+                                               file_fusionTime,
+                                               bDynamics, cortex, COMadjust,
+                                               memSprings, activeBranch,
+                                               activeBranchHeight, activeNuc,
+                                               activeNucHeight, activeCap,
+                                               activeCapHeight, activeAntiCap,
+                                               activeAntiCapHeight, activeSever,
+                                               activeSeverHeight);
+                    }
+                }
+            
+                for (unsigned int i = 0; i < dfmTargets.size(); ++i)
+                {
+                    if (dfmTargets[i].getExist())
+                    {
+                        dfmTargets[i].fluctuate(temperature, viscosity,
                                                t_step, actinVec,
                                                excZones, steric,
                                                timesFused, stericGrid,
@@ -2134,7 +2249,7 @@ int main(int argc, char *argv[])
                                                  branchingRegions,
                                                  cappingRegions, antiCapRegions,
                                                  sevRegions,
-                                                 memWalls, membranes, tether,
+                                                 memWalls, membranes, dfmTargets, tether,
                                                  true, cortex);
                         }
 
