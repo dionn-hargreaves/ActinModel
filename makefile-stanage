@@ -8,9 +8,9 @@ BUILDDIR_DEBUG := build_debug
 TARGET := bin/model
 TARGETDB := bin/model_debug
 INCDIR := include
-EIGEN := ../eigen-3.3.9
+EIGEN := ../eigen-3.4.0
 GEO := GeometricTools/GTEngine/Include
-PYT := $(CONDA_PREFIX)/include/python3.5m/
+
 
 RM := rm -f
 
@@ -22,8 +22,8 @@ SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 OBJECTS_DEBUG := $(patsubst $(SRCDIR)/%,$(BUILDDIR_DEBUG)/%,$(SOURCES:.$(SRCEXT)=.o))
 
-INC := -I $(INCDIR) -I $(EIGEN) -I $(GEO) -I $(PYT)
-LIB := -L $(CONDA_PREFIX)/lib -lpython3.5m -lboost_program_options -lutil
+INC := -I $(INCDIR) -I $(EIGEN) -I $(GEO)
+LIB := -lboost_program_options -lutil
 
 $(TARGET): $(OBJECTS)
 	  @echo " Linking..."
@@ -50,3 +50,4 @@ clean:
 clean_debug:
 	  @echo " Cleaning...";
 	    @echo " $(RM) -r $(BUILDDIR_DEBUG) $(TARGET)"; $(RM) -r $(BUILDDIR_DEBUG) $(TARGETDB)
+
