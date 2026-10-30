@@ -208,30 +208,30 @@ Actin::Actin(int ID, double birthtime, Actin &parent, int motherMonomer) // Cons
         }
 
         m_parent_id = parent.getID();
-        m_structure_id = parent.getStructureID();
-        m_subStructure_id = parent.getSubStructureID();
+        m_structure_id = parent.getStructureID(); 
+        m_subStructure_id = parent.getSubStructureID(); 
         m_crossStructure_id = parent.getCLStructureID();
         m_capped_p = true;
         m_motherMonomer = motherMonomer;
 
-        m_branchSubUnit = parent.findSubunit(motherMonomer, m_branchSubLen);
+        m_branchSubUnit = parent.findSubunit(motherMonomer, m_branchSubLen); 
 
         parent.addBranchtoParentVector(m_branchSubUnit, ID);
 
         m_branchdir = branchDir();
-        Eigen::Matrix2d rotMatrix;
+        Eigen::Matrix2d rotMatrix; 
         rotMatrix << cos(m_branchdir*s_branchAngle), -sin(m_branchdir*s_branchAngle),
-                sin(m_branchdir*s_branchAngle), cos(m_branchdir*s_branchAngle);
+                sin(m_branchdir*s_branchAngle), cos(m_branchdir*s_branchAngle); 
 
         std::array<double,2> parentVec = parent.getUnitVec(m_branchSubUnit);
-        Eigen::Vector2d parentVecEig;
+        Eigen::Vector2d parentVecEig; 
         parentVecEig << parentVec[0], parentVec[1];
         Eigen::Vector2d branchVec = rotMatrix*parentVecEig;
         m_subunit_unitVecs.push_back({branchVec(0),branchVec(1)});
         m_subunit_unitVecs.push_back({branchVec(0),branchVec(1)});
         m_subunit_unitVecs.push_back({branchVec(0),branchVec(1)});
 
-        double pointedEndX = parent.getPoint(m_branchSubUnit)[0]
+        double pointedEndX = parent.getPoint(m_branchSubUnit)[0] 
                              + (m_branchSubLen * parentVec[0]);
 
         double pointedEndY = parent.getPoint(m_branchSubUnit)[1]
@@ -247,7 +247,7 @@ Actin::Actin(int ID, double birthtime, Actin &parent, int motherMonomer) // Cons
         m_actualSubLengths.push_back( m_length / 2);
         m_actualSubLengths.push_back( m_length / 4);
 
-        m_prescribedSubLengths.push_back( m_length / 4);
+        m_prescribedSubLengths.push_back( m_length / 4); 
         m_prescribedSubLengths.push_back( m_length / 2);
         m_prescribedSubLengths.push_back( m_length / 4);
 

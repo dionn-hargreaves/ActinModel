@@ -1,5 +1,0 @@
-open terminal in current folder
-
->> make
->> bin/model path/to/config.cfg
->> ./GenerateMedia.sh /Users/md1dhar/Documents/GitHub/ActinModel 2025-06-30-run1

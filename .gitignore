@@ -12,5 +12,6 @@ venv/
 *.so.*
 *.dll
 *.dylib
-output/
-build/
+/output/
+/build/
+.DS_Store
