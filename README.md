@@ -18,15 +18,15 @@ Navigate to that directory you have just made
 
 Grab the latest version of the code off gitlab. If you do not have git you will need to install it with `sudo apt install git`
 
-`git clone https://gitlab.com/JEBradford/actinmodel`
+`git clone https://github.com/dionn-hargreaves/ActinModel`
 
 You will now have folder called `actinmodel` containing the code.
 
-Two makefiles are provided. One for a local machine and one for Sheffield's high performance computing cluster ShARC.
+Two makefiles are provided. One for a local machine and one for Sheffield's high performance computing cluster stanage.
 
 ## Dependencies
 
-I will go through the dependencies presuming you are building on a local machine first. If you are building on ShARC you will need to download Eigen to your local machine and then upload it to your data directory. I will cover this later. 
+I will go through the dependencies presuming you are building on a local machine first. If you are building on stanage you will need to download Eigen to your local machine and then upload it to your data directory. I will cover this later. 
  
 ### Eigen
 
@@ -177,15 +177,15 @@ Frames can be stacked into a video using FFmpeg. A script `stackToVid.sh` is pro
 
 Which creates a video in `fullPathToVideo` from the images in `fullPathToFrames`, with a framerate of 20. The last argument is to do with whether or not the simulation was a test run, but you can ignore this. **Make sure not to have forward slashes at the end of the input and output path, else it will not work.**
 
-## Installation and running on ShARC
+## Installation and running on Stanage
 
 **For general help using the hpc services at Sheffield see [here](https://docs.hpc.shef.ac.uk/en/latest/hpc/index.html)**
 
-Upload the actinmodel directory (which contains the code and GeometricTools) and Eigen to your data directory on ShARC. I tend to use sftp for this so something like this
+Upload the actinmodel directory (which contains the code and GeometricTools) and Eigen to your data directory on Stanage. I tend to use sftp for this so something like this
 
 `cd /home/$USER/ActinModelling/`
 
-`sftp username@sharc.shef.ac.uk`
+`sftp username@stanage.shef.ac.uk`
 
 `cd /data/username`
 
@@ -197,9 +197,9 @@ Upload the actinmodel directory (which contains the code and GeometricTools) and
 
 Boost, Anaconda Python and FFmpeg are provided as modules on ShARC, **so you should not try to upload them.**
 
-SSH into ShARC
+SSH into Stanage
 
-`ssh -X username@sharc.shef.ac.uk`
+`ssh -X username@stanage.shef.ac.uk`
 
 Start an interactive session
 
@@ -211,49 +211,16 @@ Navigate to where the code is and rename `makefile` to something else, perhaps `
 
 `mv makefile_ShARC makefile`
 
-`makefile_ShARC` works at the time of writing this but may need editing if ShARC update libraries/modules in the future.
+`makefile_stanage` works at the time of writing this but may need editing if Stanage update libraries/modules in the future.
 
-Make sure you have an output directory, and plotting directorys if you are plotting frames/videos.
+Make sure you have an output directory, and plotting directories if you are plotting frames/videos.
 
 Make sure you create a `bin` directory as you did on your local machine.
 
 **Make sure to run `make clean` to remove any compiled code from your desktop you may have uploaded.** 
 
-You need to create an anaconda environment (see [here](https://docs.hpc.shef.ac.uk/en/latest/sharc/software/apps/python.html)). My conda environment is called `forActin`. To create one, in an interactive session first load python
-
-`module load apps/python/conda`
-
-then create your environment, we need Python 3.5 and some modules for plotting
-
-`conda create -n forActin python=3.5 numpy matplotlib scipy`
-
-A batch file (`batchForSharc.sh`) is provided in the gitlab repository. You can use this as a template for submitting a job. **Make sure to add your email and username for changing to the directory.** You can see that this batch file requests the necessary hardware from ShARC, loads the dependencies (anaconda and boost), activates the anaconda environment, deals with the python library path, then compiles the code and runs the simulation.
-
-You can run this by
-
-`qsub batchForSharc.sh`
 
 
-### FFmpeg on ShARC
-
-You can download the results file from ShARC and then produce frames and a video locally. However, if you want to do this on ShARC you can. Producing frames works fine as is but to use FFmpeg on ShARC you need to make some minor alterations.
-
-In `src/createVid.cpp` change the line
-
-`std::string outPath = "/home/"+boost::lexical_cast<std::string>(USER)+"/ActinModelling";`
-
-to where your plotting directories are in ShARC, if you have followed this guide exactly then this will be `/data/$USER/ActinModelling` therefore it is 
-
-`std::string outPath = "/data/"+boost::lexical_cast<std::string>(USER)+"/ActinModelling";`
-
-In your batch file you need to load FFmpeg so add the lines 
-
-```
-#Load ffmpeg
-module load apps/ffmpeg/4.3.2/gcc-8.2-cmake-3.17.1
-```
-
-You can see that this also loads the compiler, just like loading Boost.
 
 ## Troubleshooting
 
