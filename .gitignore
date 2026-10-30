@@ -13,3 +13,4 @@ venv/
 *.dll
 *.dylib
 output/
+build/
