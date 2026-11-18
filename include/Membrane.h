@@ -29,6 +29,8 @@ private:
     double m_activeDist;
     bool m_fusable; // can this membrane undergo fusion?
     bool m_initCortex;
+    bool m_timeOutActivation;
+    double m_deactivationTime;
 
     double m_tetherStiff; // for tethering of cortex to membrane
     std::vector<int> m_tetherSubIDs;
@@ -85,7 +87,7 @@ public:
 
     Membrane(double ypos, double length, double temp, double bendMod,
              bool fusable = true, bool active = false, double activeDist = 1E-8,
-             bool initCortex = false, double memTension = 1E-5);
+             bool initCortex = false, double memTension = 1E-5, bool timeOutActivation = false, double m_deactivationTime = 3.0);
 
     Membrane(int numPoints, double temp, std::array<double,2> fusePoint,
              Membrane &membrane, std::array<int,3> fusePointsToAv,

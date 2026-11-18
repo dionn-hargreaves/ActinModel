@@ -36,7 +36,7 @@ Membrane::Membrane()
 
 Membrane::Membrane(double ypos, double length, double temp, double bendMod,
                    bool fusable, bool active, double activeDist, bool initCortex,
-                   double memTension)
+                   double memTension, bool timeOutActivation, double deactivationTime)
     : m_exist { true },
     m_cellMem { true },
     m_id { 0 }, // Should be 0 for the original cell membrane
@@ -52,8 +52,10 @@ Membrane::Membrane(double ypos, double length, double temp, double bendMod,
     m_activate { active },
     m_activeDist { activeDist },
     m_fusable { fusable },
-    m_initCortex { initCortex }
-{
+    m_initCortex { initCortex },
+    m_timeOutActivation { timeOutActivation },
+    m_deactivationTime { deactivationTime }
+    {
     // Partition the membrane into points
     m_numPoints = length / m_segLength;
 
