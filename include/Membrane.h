@@ -48,6 +48,8 @@ private:
     std::vector<std::vector<int>> m_coupCapRegIDs;
     std::vector<std::vector<int>> m_coupAntiCapRegIDs;
     std::vector<std::vector<int>> m_coupSevRegIDs;
+    std::vector<std::vector<double>> m_coupBranchRegInitTime;
+    std::vector<std::vector<int>> m_labelBlocked;
 
     // For steric grid
     // vector for each subunit, vector for each cell that sub is in
@@ -215,6 +217,8 @@ public:
     void addToCapReg(int sub, int id) { m_coupCapRegIDs[sub].push_back(id); }
     void addToAntiCapReg(int sub, int id) { m_coupAntiCapRegIDs[sub].push_back(id); }
     void addToSevReg(int sub, int id) { m_coupSevRegIDs[sub].push_back(id); }
+    void addToBranchRegInitTime(int sub, double time) { m_coupBranchRegInitTime[sub].push_back(time); }
+    void addToBlocked(int sub, int blocker) { m_labelBlocked[sub].push_back(blocker); }
 
 
     bool calcDistToTarsForActive(const std::vector<ExcZone> &excZones,

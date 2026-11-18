@@ -91,7 +91,8 @@ Membrane::Membrane(double ypos, double length, double temp, double bendMod,
         m_coupCapRegIDs.push_back(std::vector<int>());
         m_coupAntiCapRegIDs.push_back(std::vector<int>());
         m_coupSevRegIDs.push_back(std::vector<int>());
-
+        m_coupBranchRegInitTime.push_back(std::vector<double>());
+        m_labelBlocked.push_back(std::vector<int>());
     }
 
     calcSubunitVecs();
@@ -675,6 +676,7 @@ void Membrane::fluctuate(double temp, double viscosity, double dt,
 
                         branchRegions[branchRegions.size()-1].stickToMem(*this);
                         addToBranchReg(j, branchRegions.size()-1);
+                        addToBranchRegInitTime(j, currTime);
                     }
 
                     if (activeNuc && m_coupNucRegIDs[j].size() == 0)
@@ -738,6 +740,7 @@ void Membrane::fluctuate(double temp, double viscosity, double dt,
 
                         branchRegions[branchRegions.size()-1].stickToMem(*this);
                         addToBranchReg(minus1, branchRegions.size()-1);
+                        addToBranchRegInitTime(minus1, currTime);
                     }
 
                     if (activeNuc && m_coupNucRegIDs[minus1].size() == 0)
@@ -789,6 +792,7 @@ void Membrane::fluctuate(double temp, double viscosity, double dt,
 
                         branchRegions[branchRegions.size()-1].stickToMem(*this);
                         addToBranchReg(plus1, branchRegions.size()-1);
+                        addToBranchRegInitTime(plus1, currTime);
                     }
 
                     if (activeNuc && m_coupNucRegIDs[plus1].size() == 0)
@@ -852,203 +856,210 @@ void Membrane::fluctuate(double temp, double viscosity, double dt,
                     }
 
                 }
-
+            
+                if (!m_timeOutActivation && m_coupBranchRegInitTime[j].size() > 0)
+                { // Check if any branch regions have been active for longer than the lifetime
+                    if (currTime - m_coupBranchRegInitTime[j][0] > m_deactivationTime)
+                    {
+                        std::cout << " inside destruction region" << std::endl;
+                    }
+                }
                 // Check prev sub
-                int prevSub = j-1;
-                if (prevSub == -1)
-                {
-                    prevSub = m_numPoints - 1;
-                }
+                // int prevSub = j-1;
+                // if (prevSub == -1)
+                // {
+                //     prevSub = m_numPoints - 1;
+                // }
 
-                if (calcDistToTarsForActive(excZones, prevSub))
-                {
-                    // membrane should be active
+                // if (calcDistToTarsForActive(excZones, prevSub))
+                // {
+                //     // membrane should be active
 
-                    // if not already a region there, make one
-                    if (activeBranch && m_coupBranchRegIDs[prevSub].size() == 0)
-                    {
-                        std::array<double,2> uVec = { m_subunit_unitVecs[prevSub][0], m_subunit_unitVecs[prevSub][1] };
-                        std::array<double,2> pointBL = { m_points[prevSub][0], m_points[prevSub][1] };
-                        branchRegions.push_back((ProteinRegion(uVec, m_prescribedSubLengths[prevSub], activeBranchHeight, pointBL, arpConc, 0, 0, 0, 1, prevSub)));
+                //     // if not already a region there, make one
+                //     if (activeBranch && m_coupBranchRegIDs[prevSub].size() == 0)
+                //     {
+                //         std::array<double,2> uVec = { m_subunit_unitVecs[prevSub][0], m_subunit_unitVecs[prevSub][1] };
+                //         std::array<double,2> pointBL = { m_points[prevSub][0], m_points[prevSub][1] };
+                //         branchRegions.push_back((ProteinRegion(uVec, m_prescribedSubLengths[prevSub], activeBranchHeight, pointBL, arpConc, 0, 0, 0, 1, prevSub)));
 
-                        branchRegions[branchRegions.size()-1].stickToMem(*this);
-                        addToBranchReg(prevSub, branchRegions.size()-1);
-                    }
+                //         branchRegions[branchRegions.size()-1].stickToMem(*this);
+                //         addToBranchReg(prevSub, branchRegions.size()-1);
+                //     }
 
-                    if (activeNuc && m_coupNucRegIDs[prevSub].size() == 0)
-                    {
-                        std::array<double,2> uVec = { m_subunit_unitVecs[prevSub][0], m_subunit_unitVecs[prevSub][1] };
-                        std::array<double,2> pointBL = { m_points[prevSub][0], m_points[prevSub][1] };
-                        nucRegions.push_back((ProteinRegion(uVec, m_prescribedSubLengths[prevSub], activeNucHeight, pointBL, 0, 0, 1.0, 0, 1, prevSub)));
+                //     if (activeNuc && m_coupNucRegIDs[prevSub].size() == 0)
+                //     {
+                //         std::array<double,2> uVec = { m_subunit_unitVecs[prevSub][0], m_subunit_unitVecs[prevSub][1] };
+                //         std::array<double,2> pointBL = { m_points[prevSub][0], m_points[prevSub][1] };
+                //         nucRegions.push_back((ProteinRegion(uVec, m_prescribedSubLengths[prevSub], activeNucHeight, pointBL, 0, 0, 1.0, 0, 1, prevSub)));
 
-                        nucRegions[nucRegions.size()-1].stickToMem(*this);
-                        addToNucReg(prevSub, nucRegions.size()-1);
-                    }
+                //         nucRegions[nucRegions.size()-1].stickToMem(*this);
+                //         addToNucReg(prevSub, nucRegions.size()-1);
+                //     }
 
-                    if (activeCap && m_coupCapRegIDs[prevSub].size() == 0)
-                    {
-                        std::array<double,2> uVec = { m_subunit_unitVecs[prevSub][0], m_subunit_unitVecs[prevSub][1] };
-                        std::array<double,2> pointBL = { m_points[prevSub][0], m_points[prevSub][1] };
-                        capRegions.push_back((ProteinRegion(uVec, m_prescribedSubLengths[prevSub], activeCapHeight, pointBL, 0, 1.0, 0, 0, 1, prevSub)));
+                //     if (activeCap && m_coupCapRegIDs[prevSub].size() == 0)
+                //     {
+                //         std::array<double,2> uVec = { m_subunit_unitVecs[prevSub][0], m_subunit_unitVecs[prevSub][1] };
+                //         std::array<double,2> pointBL = { m_points[prevSub][0], m_points[prevSub][1] };
+                //         capRegions.push_back((ProteinRegion(uVec, m_prescribedSubLengths[prevSub], activeCapHeight, pointBL, 0, 1.0, 0, 0, 1, prevSub)));
 
-                        capRegions[capRegions.size()-1].stickToMem(*this);
-                        addToCapReg(prevSub, capRegions.size()-1);
-                    }
+                //         capRegions[capRegions.size()-1].stickToMem(*this);
+                //         addToCapReg(prevSub, capRegions.size()-1);
+                //     }
 
-                    if (activeAntiCap && m_coupAntiCapRegIDs[prevSub].size() == 0)
-                    {
-                        std::array<double,2> uVec = { m_subunit_unitVecs[prevSub][0], m_subunit_unitVecs[prevSub][1] };
-                        std::array<double,2> pointBL = { m_points[prevSub][0], m_points[prevSub][1] };
-                        antiCapRegions.push_back((ProteinRegion(uVec, m_prescribedSubLengths[prevSub], activeAntiCapHeight, pointBL, 0, 0, 0, 0, 1, prevSub)));
+                //     if (activeAntiCap && m_coupAntiCapRegIDs[prevSub].size() == 0)
+                //     {
+                //         std::array<double,2> uVec = { m_subunit_unitVecs[prevSub][0], m_subunit_unitVecs[prevSub][1] };
+                //         std::array<double,2> pointBL = { m_points[prevSub][0], m_points[prevSub][1] };
+                //         antiCapRegions.push_back((ProteinRegion(uVec, m_prescribedSubLengths[prevSub], activeAntiCapHeight, pointBL, 0, 0, 0, 0, 1, prevSub)));
 
-                        antiCapRegions[antiCapRegions.size()-1].stickToMem(*this);
-                        addToAntiCapReg(prevSub, antiCapRegions.size()-1);
-                    }
+                //         antiCapRegions[antiCapRegions.size()-1].stickToMem(*this);
+                //         addToAntiCapReg(prevSub, antiCapRegions.size()-1);
+                //     }
 
-                    if (activeSever && m_coupSevRegIDs[prevSub].size() == 0)
-                    {
-                        std::array<double,2> uVec = { m_subunit_unitVecs[prevSub][0], m_subunit_unitVecs[prevSub][1] };
-                        std::array<double,2> pointBL = { m_points[prevSub][0], m_points[prevSub][1] };
-                        sevRegions.push_back((ProteinRegion(uVec, m_prescribedSubLengths[prevSub], activeSeverHeight, pointBL, 0, 0, 0, 1.0, 1, prevSub)));
+                //     if (activeSever && m_coupSevRegIDs[prevSub].size() == 0)
+                //     {
+                //         std::array<double,2> uVec = { m_subunit_unitVecs[prevSub][0], m_subunit_unitVecs[prevSub][1] };
+                //         std::array<double,2> pointBL = { m_points[prevSub][0], m_points[prevSub][1] };
+                //         sevRegions.push_back((ProteinRegion(uVec, m_prescribedSubLengths[prevSub], activeSeverHeight, pointBL, 0, 0, 0, 1.0, 1, prevSub)));
 
-                        sevRegions[sevRegions.size()-1].stickToMem(*this);
-                        addToSevReg(prevSub, sevRegions.size()-1);
-                    }
+                //         sevRegions[sevRegions.size()-1].stickToMem(*this);
+                //         addToSevReg(prevSub, sevRegions.size()-1);
+                //     }
 
-                    // New idea - turn on neighbours too
-                    int plus1 = prevSub + 1;
-                    int minus1 = prevSub - 1;
-                    if (prevSub == 0)
-                    {
-                        minus1 = m_numPoints-1;
-                    }
-                    else if (prevSub == m_numPoints - 1)
-                    {
-                        plus1 = 0;
-                    }
+                //     // New idea - turn on neighbours too
+                //     int plus1 = prevSub + 1;
+                //     int minus1 = prevSub - 1;
+                //     if (prevSub == 0)
+                //     {
+                //         minus1 = m_numPoints-1;
+                //     }
+                //     else if (prevSub == m_numPoints - 1)
+                //     {
+                //         plus1 = 0;
+                //     }
 
-                    // if not already a region there, make one
-                    if (activeBranch && m_coupBranchRegIDs[minus1].size() == 0)
-                    {
-                        std::array<double,2> uVec = { m_subunit_unitVecs[minus1][0], m_subunit_unitVecs[minus1][1] };
-                        std::array<double,2> pointBL = { m_points[minus1][0], m_points[minus1][1] };
-                        branchRegions.push_back((ProteinRegion(uVec, m_prescribedSubLengths[minus1], activeBranchHeight, pointBL, arpConc, 0, 0, 0, 1, minus1)));
+                //     // if not already a region there, make one
+                //     if (activeBranch && m_coupBranchRegIDs[minus1].size() == 0)
+                //     {
+                //         std::array<double,2> uVec = { m_subunit_unitVecs[minus1][0], m_subunit_unitVecs[minus1][1] };
+                //         std::array<double,2> pointBL = { m_points[minus1][0], m_points[minus1][1] };
+                //         branchRegions.push_back((ProteinRegion(uVec, m_prescribedSubLengths[minus1], activeBranchHeight, pointBL, arpConc, 0, 0, 0, 1, minus1)));
 
-                        branchRegions[branchRegions.size()-1].stickToMem(*this);
-                        addToBranchReg(minus1, branchRegions.size()-1);
-                    }
+                //         branchRegions[branchRegions.size()-1].stickToMem(*this);
+                //         addToBranchReg(minus1, branchRegions.size()-1);
+                //     }
 
-                    if (activeNuc && m_coupNucRegIDs[minus1].size() == 0)
-                    {
-                        std::array<double,2> uVec = { m_subunit_unitVecs[minus1][0], m_subunit_unitVecs[minus1][1] };
-                        std::array<double,2> pointBL = { m_points[minus1][0], m_points[minus1][1] };
-                        nucRegions.push_back((ProteinRegion(uVec, m_prescribedSubLengths[minus1], activeNucHeight, pointBL, 0, 0, 1.0, 0, 1, minus1)));
+                //     if (activeNuc && m_coupNucRegIDs[minus1].size() == 0)
+                //     {
+                //         std::array<double,2> uVec = { m_subunit_unitVecs[minus1][0], m_subunit_unitVecs[minus1][1] };
+                //         std::array<double,2> pointBL = { m_points[minus1][0], m_points[minus1][1] };
+                //         nucRegions.push_back((ProteinRegion(uVec, m_prescribedSubLengths[minus1], activeNucHeight, pointBL, 0, 0, 1.0, 0, 1, minus1)));
 
-                        nucRegions[nucRegions.size()-1].stickToMem(*this);
-                        addToNucReg(minus1, nucRegions.size()-1);
-                    }
+                //         nucRegions[nucRegions.size()-1].stickToMem(*this);
+                //         addToNucReg(minus1, nucRegions.size()-1);
+                //     }
 
-                    if (activeCap && m_coupCapRegIDs[minus1].size() == 0)
-                    {
-                        std::array<double,2> uVec = { m_subunit_unitVecs[minus1][0], m_subunit_unitVecs[minus1][1] };
-                        std::array<double,2> pointBL = { m_points[minus1][0], m_points[minus1][1] };
-                        capRegions.push_back((ProteinRegion(uVec, m_prescribedSubLengths[minus1], activeCapHeight, pointBL, 0, 1.0, 0, 0, 1, minus1)));
+                //     if (activeCap && m_coupCapRegIDs[minus1].size() == 0)
+                //     {
+                //         std::array<double,2> uVec = { m_subunit_unitVecs[minus1][0], m_subunit_unitVecs[minus1][1] };
+                //         std::array<double,2> pointBL = { m_points[minus1][0], m_points[minus1][1] };
+                //         capRegions.push_back((ProteinRegion(uVec, m_prescribedSubLengths[minus1], activeCapHeight, pointBL, 0, 1.0, 0, 0, 1, minus1)));
 
-                        capRegions[capRegions.size()-1].stickToMem(*this);
-                        addToCapReg(minus1, capRegions.size()-1);
-                    }
+                //         capRegions[capRegions.size()-1].stickToMem(*this);
+                //         addToCapReg(minus1, capRegions.size()-1);
+                //     }
 
-                    if (activeAntiCap && m_coupAntiCapRegIDs[minus1].size() == 0)
-                    {
-                        std::array<double,2> uVec = { m_subunit_unitVecs[minus1][0], m_subunit_unitVecs[minus1][1] };
-                        std::array<double,2> pointBL = { m_points[minus1][0], m_points[minus1][1] };
-                        antiCapRegions.push_back((ProteinRegion(uVec, m_prescribedSubLengths[minus1], activeAntiCapHeight, pointBL, 0, 0, 0, 0, 1, minus1)));
+                //     if (activeAntiCap && m_coupAntiCapRegIDs[minus1].size() == 0)
+                //     {
+                //         std::array<double,2> uVec = { m_subunit_unitVecs[minus1][0], m_subunit_unitVecs[minus1][1] };
+                //         std::array<double,2> pointBL = { m_points[minus1][0], m_points[minus1][1] };
+                //         antiCapRegions.push_back((ProteinRegion(uVec, m_prescribedSubLengths[minus1], activeAntiCapHeight, pointBL, 0, 0, 0, 0, 1, minus1)));
 
-                        antiCapRegions[antiCapRegions.size()-1].stickToMem(*this);
-                        addToAntiCapReg(minus1, antiCapRegions.size()-1);
-                    }
+                //         antiCapRegions[antiCapRegions.size()-1].stickToMem(*this);
+                //         addToAntiCapReg(minus1, antiCapRegions.size()-1);
+                //     }
 
-                    if (activeSever && m_coupSevRegIDs[minus1].size() == 0)
-                    {
-                        std::array<double,2> uVec = { m_subunit_unitVecs[minus1][0], m_subunit_unitVecs[minus1][1] };
-                        std::array<double,2> pointBL = { m_points[minus1][0], m_points[minus1][1] };
-                        sevRegions.push_back((ProteinRegion(uVec, m_prescribedSubLengths[minus1], activeSeverHeight, pointBL, 0, 0, 0, 1.0, 1, minus1)));
+                //     if (activeSever && m_coupSevRegIDs[minus1].size() == 0)
+                //     {
+                //         std::array<double,2> uVec = { m_subunit_unitVecs[minus1][0], m_subunit_unitVecs[minus1][1] };
+                //         std::array<double,2> pointBL = { m_points[minus1][0], m_points[minus1][1] };
+                //         sevRegions.push_back((ProteinRegion(uVec, m_prescribedSubLengths[minus1], activeSeverHeight, pointBL, 0, 0, 0, 1.0, 1, minus1)));
 
-                        sevRegions[sevRegions.size()-1].stickToMem(*this);
-                        addToSevReg(minus1, sevRegions.size()-1);
-                    }
+                //         sevRegions[sevRegions.size()-1].stickToMem(*this);
+                //         addToSevReg(minus1, sevRegions.size()-1);
+                //     }
 
-                    // if not already a region there, make one
-                    if (activeBranch && m_coupBranchRegIDs[plus1].size() == 0)
-                    {
-                        std::array<double,2> uVec = { m_subunit_unitVecs[plus1][0], m_subunit_unitVecs[plus1][1] };
-                        std::array<double,2> pointBL = { m_points[plus1][0], m_points[plus1][1] };
-                        branchRegions.push_back((ProteinRegion(uVec, m_prescribedSubLengths[plus1], activeBranchHeight, pointBL, arpConc, 0, 0, 0, 1, plus1)));
+                //     // if not already a region there, make one
+                //     if (activeBranch && m_coupBranchRegIDs[plus1].size() == 0)
+                //     {
+                //         std::array<double,2> uVec = { m_subunit_unitVecs[plus1][0], m_subunit_unitVecs[plus1][1] };
+                //         std::array<double,2> pointBL = { m_points[plus1][0], m_points[plus1][1] };
+                //         branchRegions.push_back((ProteinRegion(uVec, m_prescribedSubLengths[plus1], activeBranchHeight, pointBL, arpConc, 0, 0, 0, 1, plus1)));
 
-                        branchRegions[branchRegions.size()-1].stickToMem(*this);
-                        addToBranchReg(plus1, branchRegions.size()-1);
-                    }
+                //         branchRegions[branchRegions.size()-1].stickToMem(*this);
+                //         addToBranchReg(plus1, branchRegions.size()-1);
+                //     }
 
-                    if (activeNuc && m_coupNucRegIDs[plus1].size() == 0)
-                    {
-                        std::array<double,2> uVec = { m_subunit_unitVecs[plus1][0], m_subunit_unitVecs[plus1][1] };
-                        std::array<double,2> pointBL = { m_points[plus1][0], m_points[plus1][1] };
-                        nucRegions.push_back((ProteinRegion(uVec, m_prescribedSubLengths[plus1], activeNucHeight, pointBL, 0, 0, 1.0, 0, 1, plus1)));
+                //     if (activeNuc && m_coupNucRegIDs[plus1].size() == 0)
+                //     {
+                //         std::array<double,2> uVec = { m_subunit_unitVecs[plus1][0], m_subunit_unitVecs[plus1][1] };
+                //         std::array<double,2> pointBL = { m_points[plus1][0], m_points[plus1][1] };
+                //         nucRegions.push_back((ProteinRegion(uVec, m_prescribedSubLengths[plus1], activeNucHeight, pointBL, 0, 0, 1.0, 0, 1, plus1)));
 
-                        nucRegions[nucRegions.size()-1].stickToMem(*this);
-                        addToNucReg(plus1, nucRegions.size()-1);
-                    }
+                //         nucRegions[nucRegions.size()-1].stickToMem(*this);
+                //         addToNucReg(plus1, nucRegions.size()-1);
+                //     }
 
-                    if (activeCap && m_coupCapRegIDs[plus1].size() == 0)
-                    {
-                        std::array<double,2> uVec = { m_subunit_unitVecs[plus1][0], m_subunit_unitVecs[plus1][1] };
-                        std::array<double,2> pointBL = { m_points[plus1][0], m_points[plus1][1] };
-                        capRegions.push_back((ProteinRegion(uVec, m_prescribedSubLengths[plus1], activeCapHeight, pointBL, 0, 1.0, 0, 0, 1, plus1)));
+                //     if (activeCap && m_coupCapRegIDs[plus1].size() == 0)
+                //     {
+                //         std::array<double,2> uVec = { m_subunit_unitVecs[plus1][0], m_subunit_unitVecs[plus1][1] };
+                //         std::array<double,2> pointBL = { m_points[plus1][0], m_points[plus1][1] };
+                //         capRegions.push_back((ProteinRegion(uVec, m_prescribedSubLengths[plus1], activeCapHeight, pointBL, 0, 1.0, 0, 0, 1, plus1)));
 
-                        capRegions[capRegions.size()-1].stickToMem(*this);
-                        addToCapReg(plus1, capRegions.size()-1);
-                    }
+                //         capRegions[capRegions.size()-1].stickToMem(*this);
+                //         addToCapReg(plus1, capRegions.size()-1);
+                //     }
 
-                    if (activeAntiCap && m_coupAntiCapRegIDs[plus1].size() == 0)
-                    {
-                        std::array<double,2> uVec = { m_subunit_unitVecs[plus1][0], m_subunit_unitVecs[plus1][1] };
-                        std::array<double,2> pointBL = { m_points[plus1][0], m_points[plus1][1] };
-                        antiCapRegions.push_back((ProteinRegion(uVec, m_prescribedSubLengths[plus1], activeAntiCapHeight, pointBL, 0, 0, 0, 0, 1, plus1)));
+                //     if (activeAntiCap && m_coupAntiCapRegIDs[plus1].size() == 0)
+                //     {
+                //         std::array<double,2> uVec = { m_subunit_unitVecs[plus1][0], m_subunit_unitVecs[plus1][1] };
+                //         std::array<double,2> pointBL = { m_points[plus1][0], m_points[plus1][1] };
+                //         antiCapRegions.push_back((ProteinRegion(uVec, m_prescribedSubLengths[plus1], activeAntiCapHeight, pointBL, 0, 0, 0, 0, 1, plus1)));
 
-                        antiCapRegions[antiCapRegions.size()-1].stickToMem(*this);
-                        addToAntiCapReg(plus1, antiCapRegions.size()-1);
-                    }
+                //         antiCapRegions[antiCapRegions.size()-1].stickToMem(*this);
+                //         addToAntiCapReg(plus1, antiCapRegions.size()-1);
+                //     }
 
-                    if (activeSever && m_coupSevRegIDs[plus1].size() == 0)
-                    {
-                        std::array<double,2> uVec = { m_subunit_unitVecs[plus1][0], m_subunit_unitVecs[plus1][1] };
-                        std::array<double,2> pointBL = { m_points[plus1][0], m_points[plus1][1] };
-                        sevRegions.push_back((ProteinRegion(uVec, m_prescribedSubLengths[plus1], activeSeverHeight, pointBL, 0, 0, 0, 1.0, 1, plus1)));
+                //     if (activeSever && m_coupSevRegIDs[plus1].size() == 0)
+                //     {
+                //         std::array<double,2> uVec = { m_subunit_unitVecs[plus1][0], m_subunit_unitVecs[plus1][1] };
+                //         std::array<double,2> pointBL = { m_points[plus1][0], m_points[plus1][1] };
+                //         sevRegions.push_back((ProteinRegion(uVec, m_prescribedSubLengths[plus1], activeSeverHeight, pointBL, 0, 0, 0, 1.0, 1, plus1)));
 
-                        sevRegions[sevRegions.size()-1].stickToMem(*this);
-                        addToSevReg(plus1, sevRegions.size()-1);
-                    }
+                //         sevRegions[sevRegions.size()-1].stickToMem(*this);
+                //         addToSevReg(plus1, sevRegions.size()-1);
+                //     }
 
-                    // Delete any tethers on sub j
-                    int numTethers = m_tetherRelDists.size();
-                    int k = 0;
-                    while (k < numTethers)
-                    {
-                        if (m_tetherSubIDs[k] == prevSub || m_tetherSubIDs[k] == plus1 || m_tetherSubIDs[k] == minus1)
-                        {
-                            // Delete the tether
-                            numTethers -= 1;
-                            m_tetherSubIDs.erase(m_tetherSubIDs.begin()+k);
-                            m_tetherRelDists.erase(m_tetherRelDists.begin()+k);
-                            // Delete on other membrane
-                            cortex.eraseTether(k);
-                        }
-                        else
-                        {
-                            ++k;
-                        }
-                    }
-                }
+                //     // Delete any tethers on sub j
+                //     int numTethers = m_tetherRelDists.size();
+                //     int k = 0;
+                //     while (k < numTethers)
+                //     {
+                //         if (m_tetherSubIDs[k] == prevSub || m_tetherSubIDs[k] == plus1 || m_tetherSubIDs[k] == minus1)
+                //         {
+                //             // Delete the tether
+                //             numTethers -= 1;
+                //             m_tetherSubIDs.erase(m_tetherSubIDs.begin()+k);
+                //             m_tetherRelDists.erase(m_tetherRelDists.begin()+k);
+                //             // Delete on other membrane
+                //             cortex.eraseTether(k);
+                //         }
+                //         else
+                //         {
+                //             ++k;
+                //         }
+                //     }
+                // }
 
             }
 
