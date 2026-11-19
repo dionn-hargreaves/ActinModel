@@ -92,6 +92,7 @@ public:
     bool getCoupledBool() const { return m_coupledBool; }
     int getCoupledSub() const { return m_coupledMemSub; }
     void setCoupledSub(int coupSub) { m_coupledMemSub = coupSub; }
+    void setArpConc(double arpConc) { m_arpConc = arpConc; }
     std::uniform_real_distribution<double> m_rectangleWidth;
     std::uniform_real_distribution<double> m_rectangleHeight;
     std::uniform_real_distribution<double> getWidthDist() const { return m_rectangleWidth; }

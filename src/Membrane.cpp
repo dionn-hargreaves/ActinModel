@@ -856,12 +856,16 @@ void Membrane::fluctuate(double temp, double viscosity, double dt,
                     }
 
                 }
-            
-                if (!m_timeOutActivation && m_coupBranchRegInitTime[j].size() > 0)
+                
+                // if activation is time limited, check if the branch region has been active for long enough to turned off
+                if (m_timeOutActivation && m_coupBranchRegInitTime[j].size() > 0)
                 { // Check if any branch regions have been active for longer than the lifetime
-                    if (currTime - m_coupBranchRegInitTime[j][0] > m_deactivationTime)
+                    if (currTime - m_coupBranchRegInitTime[j][0] > m_deactivationTime && m_labelBlocked[j].size() == 0)
                     {
-                        std::cout << " inside destruction region" << std::endl;
+                        addToBlocked(j, 1); // label subunit as blocked
+                        branchRegions[m_coupBranchRegIDs[j][0]].setArpConc(0.0); // clear the branch region
+
+                        //std::cout << " inside destruction region" << std::endl;
                     }
                 }
                 // Check prev sub
